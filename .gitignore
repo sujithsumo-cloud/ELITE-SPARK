@@ -1,0 +1,58 @@
+# ELITE SPARK - Git Ignore
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.ppk
+*.key
+
+# Terraform working directories
+**/.terraform/
+
+# Terraform state - NEVER COMMIT
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.backup
+
+# Terraform variables
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Terraform crash / override / plan files
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfplan
+tfplan
+
+# Temporary policy files
+alb-access-log-policy.json
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs / temporary files
+*.log
+*.tmp
+*.temp
+# Old / temporary project files
+global rds idea.png
+terraform/**/plan*.txt
