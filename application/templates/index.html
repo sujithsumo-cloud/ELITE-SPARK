@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Spark Finance Platform</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f4f6f8;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .region {
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #eee;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Elite Spark Finance Platform</h1>
+
+    <div class="region">
+        Active Region: {{ region }}
+    </div>
+
+    <h2>Create Transaction</h2>
+
+    <form action="/create" method="POST">
+
+        <input
+            type="text"
+            name="customer_id"
+            placeholder="Customer ID"
+            required
+        >
+
+        <input
+            type="number"
+            step="0.01"
+            name="amount"
+            placeholder="Amount"
+            required
+        >
+
+        <select name="type" required>
+            <option value="CREDIT">CREDIT</option>
+            <option value="DEBIT">DEBIT</option>
+        </select>
+
+        <button type="submit">
+            Create Transaction
+        </button>
+
+    </form>
+
+    <h2>Transaction History</h2>
+
+    <table>
+
+        <tr>
+            <th>Transaction ID</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Region</th>
+            <th>Timestamp</th>
+        </tr>
+
+        {% for transaction in transactions %}
+
+        <tr>
+            <td>{{ transaction.transaction_id }}</td>
+            <td>{{ transaction.customer_id }}</td>
+            <td>{{ transaction.amount }}</td>
+            <td>{{ transaction.type }}</td>
+            <td>{{ transaction.status }}</td>
+            <td>{{ transaction.region }}</td>
+            <td>{{ transaction.timestamp }}</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>
