@@ -56,3 +56,5 @@ Thumbs.db
 # Old / temporary project files
 global rds idea.png
 terraform/**/plan*.txt
+github-ecr-policy.json
+github-oidc-trust.json

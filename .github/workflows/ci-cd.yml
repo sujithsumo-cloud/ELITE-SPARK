@@ -1,0 +1,89 @@
+name: Elite Spark CI-CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "application/**"
+      - ".github/workflows/ci-cd.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_ACCOUNT_ID: "257074875139"
+  HYD_REGION: "ap-south-2"
+  MUM_REGION: "ap-south-1"
+  ECR_REPOSITORY: "finance-app"
+
+jobs:
+  build-and-push:
+    name: Build and Push Finance App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Validate Python application
+        run: python -m py_compile application/app.py
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: arn:aws:iam::257074875139:role/ELITE-SPARK-GITHUB-ACTIONS-ROLE
+          aws-region: ap-south-2
+          allowed-account-ids: "257074875139"
+
+      - name: Login to Hyderabad ECR
+        run: |
+          aws ecr get-login-password --region $HYD_REGION | \
+          docker login \
+          --username AWS \
+          --password-stdin \
+          $AWS_ACCOUNT_ID.dkr.ecr.$HYD_REGION.amazonaws.com
+
+      - name: Build Docker image
+        run: |
+          docker build \
+          -t $ECR_REPOSITORY:sha-$GITHUB_SHA \
+          ./application
+
+      - name: Push image to Hyderabad ECR
+        run: |
+          HYD_IMAGE=$AWS_ACCOUNT_ID.dkr.ecr.$HYD_REGION.amazonaws.com/$ECR_REPOSITORY:sha-$GITHUB_SHA
+
+          docker tag \
+          $ECR_REPOSITORY:sha-$GITHUB_SHA \
+          $HYD_IMAGE
+
+          docker push $HYD_IMAGE
+
+      - name: Login to Mumbai ECR
+        run: |
+          aws ecr get-login-password --region $MUM_REGION | \
+          docker login \
+          --username AWS \
+          --password-stdin \
+          $AWS_ACCOUNT_ID.dkr.ecr.$MUM_REGION.amazonaws.com
+
+      - name: Push image to Mumbai ECR
+        run: |
+          MUM_IMAGE=$AWS_ACCOUNT_ID.dkr.ecr.$MUM_REGION.amazonaws.com/$ECR_REPOSITORY:sha-$GITHUB_SHA
+
+          docker tag \
+          $ECR_REPOSITORY:sha-$GITHUB_SHA \
+          $MUM_IMAGE
+
+          docker push $MUM_IMAGE
+
+      - name: CI-CD summary
+        run: |
+          echo "Elite Spark CI/CD completed successfully"
+          echo "Commit: $GITHUB_SHA"
+          echo "Hyderabad ECR: $HYD_REGION"
+          echo "Mumbai ECR: $MUM_REGION"
