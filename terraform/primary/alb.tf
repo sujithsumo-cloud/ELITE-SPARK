@@ -55,15 +55,54 @@ resource "aws_lb" "app" {
 
 
 # ============================================================
+# EXISTING ACM CERTIFICATE
+# Certificate was issued manually in ACM for the application
+# hostname. Terraform reads the issued certificate and attaches
+# it to the Hyderabad HTTPS listener; Terraform does not own or
+# delete the certificate.
+# ============================================================
+
+data "aws_acm_certificate" "finance" {
+  domain      = "finance.best.2bd.net"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+
+# ============================================================
 # HTTP LISTENER
-# Receives traffic on port 80 and forwards it to the
-# application target group on port 5000.
+# Keep port 80 available only to redirect clients to HTTPS.
 # ============================================================
 
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.app.arn
   port              = 80
   protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+
+# ============================================================
+# HTTPS LISTENER
+# TLS terminates at the ALB. The ALB then forwards HTTP traffic
+# privately to the Docker application on target-group port 5000.
+# ============================================================
+
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = data.aws_acm_certificate.finance.arn
 
   default_action {
     type             = "forward"
