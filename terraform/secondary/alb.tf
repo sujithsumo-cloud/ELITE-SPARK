@@ -3,6 +3,8 @@
 #
 # Public ALB
 #      ↓
+# HTTPS :443
+#      ↓
 # MUM-APP-TG :5000
 #      ↓
 # Private EC2 / Docker
@@ -76,7 +78,22 @@ resource "aws_lb" "app" {
 
 
 # ------------------------------------------------------------
+# EXISTING ACM CERTIFICATE
+# The issued finance.best.2bd.net certificate is read from ACM
+# in ap-south-1 and attached to the Mumbai HTTPS listener.
+# Terraform does not own or delete this certificate.
+# ------------------------------------------------------------
+
+data "aws_acm_certificate" "finance" {
+  domain      = "finance.best.2bd.net"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+
+# ------------------------------------------------------------
 # HTTP LISTENER
+# Port 80 is retained only to redirect clients to HTTPS.
 # ------------------------------------------------------------
 
 resource "aws_lb_listener" "http" {
@@ -87,8 +104,35 @@ resource "aws_lb_listener" "http" {
   protocol = "HTTP"
 
   default_action {
-    type = "forward"
+    type = "redirect"
 
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+
+# ------------------------------------------------------------
+# HTTPS LISTENER
+# TLS terminates on MUM-ALB. Backend traffic remains HTTP :5000
+# inside the VPC to the private Docker application.
+# ------------------------------------------------------------
+
+resource "aws_lb_listener" "https" {
+
+  load_balancer_arn = aws_lb.app.arn
+
+  port     = 443
+  protocol = "HTTPS"
+
+  ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn = data.aws_acm_certificate.finance.arn
+
+  default_action {
+    type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
   }
 }

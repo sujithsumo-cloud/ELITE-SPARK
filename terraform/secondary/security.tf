@@ -1,16 +1,26 @@
 # ============================================================
 # MUMBAI ALB SECURITY GROUP
+# Public HTTP is retained only for redirecting clients to HTTPS.
+# HTTPS is the application entry point.
 # ============================================================
 
 resource "aws_security_group" "alb" {
   name        = "MUM-ALB-SG"
-  description = "Allow public HTTP traffic to Mumbai DR ALB"
+  description = "Allow public HTTP redirect and HTTPS traffic to Mumbai DR ALB"
   vpc_id      = aws_vpc.dr.id
 
   ingress {
-    description = "HTTP from Internet"
+    description = "HTTP from Internet for HTTPS redirect"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS from Internet"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
