@@ -1,0 +1,26 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Action": [
+				"ecr:GetAuthorizationToken"
+			],
+			"Effect": "Allow",
+			"Resource": "*",
+			"Sid": "ECRAuthorization"
+		},
+		{
+			"Action": [
+				"ecr:BatchCheckLayerAvailability",
+				"ecr:GetDownloadUrlForLayer",
+				"ecr:BatchGetImage"
+			],
+			"Effect": "Allow",
+			"Resource": [
+				"arn:aws:ecr:ap-south-2:257074875139:repository/finance-app",
+				"arn:aws:ecr:ap-south-1:257074875139:repository/finance-app"
+			],
+			"Sid": "PullFinanceApplicationImage"
+		}
+	]
+}
