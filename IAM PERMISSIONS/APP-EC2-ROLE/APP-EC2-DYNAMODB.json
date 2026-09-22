@@ -1,0 +1,20 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Action": [
+				"dynamodb:GetItem",
+				"dynamodb:PutItem",
+				"dynamodb:UpdateItem",
+				"dynamodb:Scan",
+				"dynamodb:Query"
+			],
+			"Effect": "Allow",
+			"Resource": [
+				"arn:aws:dynamodb:ap-south-2:257074875139:table/FIN-TRANSACTIONS",
+				"arn:aws:dynamodb:ap-south-1:257074875139:table/FIN-TRANSACTIONS"
+			],
+			"Sid": "FinanceTransactionsAccess"
+		}
+	]
+}
