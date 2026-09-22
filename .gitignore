@@ -58,3 +58,21 @@ global rds idea.png
 terraform/**/plan*.txt
 github-ecr-policy.json
 github-oidc-trust.json
+# ------------------------------------------------------------
+# ELITE SPARK local recovery / demo / troubleshooting files
+# ------------------------------------------------------------
+
+Demo Video/
+
+delete-demo-key.json
+demo-txn-key.json
+hyd-manifest.json
+mum-manifest.json
+recovered-item.json
+restore-key.json
+
+terraform/**/*preview*.txt
+terraform/**/*.disabled
+terraform/**/ui-recovery/
+
+*Remove-Item
