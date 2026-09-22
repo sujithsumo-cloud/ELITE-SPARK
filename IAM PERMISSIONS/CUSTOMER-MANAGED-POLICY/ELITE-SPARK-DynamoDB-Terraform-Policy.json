@@ -1,0 +1,84 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "EliteSparkDynamoDBDiscovery",
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:ListTables",
+				"dynamodb:ListGlobalTables",
+				"dynamodb:ListBackups",
+				"dynamodb:DescribeLimits"
+			],
+			"Resource": "*",
+			"Condition": {
+				"StringEquals": {
+					"aws:RequestedRegion": [
+						"ap-south-2",
+						"ap-south-1"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "EliteSparkDynamoDBTableManagement",
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:CreateTable",
+				"dynamodb:DeleteTable",
+				"dynamodb:DescribeTable",
+				"dynamodb:UpdateTable",
+				"dynamodb:DescribeContinuousBackups",
+				"dynamodb:UpdateContinuousBackups",
+				"dynamodb:DescribeTimeToLive",
+				"dynamodb:DescribeTableReplicaAutoScaling",
+				"dynamodb:ListTagsOfResource",
+				"dynamodb:TagResource",
+				"dynamodb:UntagResource"
+			],
+			"Resource": [
+				"arn:aws:dynamodb:ap-south-2:257074875139:table/FIN-TRANSACTIONS*",
+				"arn:aws:dynamodb:ap-south-1:257074875139:table/FIN-TRANSACTIONS*"
+			]
+		},
+		{
+			"Sid": "EliteSparkGlobalTableReplicaManagement",
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:CreateTableReplica",
+				"dynamodb:DeleteTableReplica",
+				"dynamodb:AssociateTableReplica",
+				"dynamodb:ReplicateSettings",
+				"dynamodb:ReadDataForReplication",
+				"dynamodb:WriteDataForReplication",
+				"dynamodb:UpdateGlobalTable",
+				"dynamodb:UpdateGlobalTableSettings",
+				"dynamodb:DescribeGlobalTable",
+				"dynamodb:DescribeGlobalTableSettings"
+			],
+			"Resource": [
+				"arn:aws:dynamodb:ap-south-2:257074875139:table/FIN-TRANSACTIONS*",
+				"arn:aws:dynamodb:ap-south-1:257074875139:table/FIN-TRANSACTIONS*",
+				"arn:aws:dynamodb::257074875139:global-table/FIN-TRANSACTIONS"
+			]
+		},
+		{
+			"Sid": "EliteSparkPITRRestore",
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:RestoreTableToPointInTime",
+				"dynamodb:BatchWriteItem",
+				"dynamodb:DeleteItem",
+				"dynamodb:GetItem",
+				"dynamodb:PutItem",
+				"dynamodb:Query",
+				"dynamodb:Scan",
+				"dynamodb:UpdateItem"
+			],
+			"Resource": [
+				"arn:aws:dynamodb:ap-south-2:257074875139:table/FIN-TRANSACTIONS*",
+				"arn:aws:dynamodb:ap-south-1:257074875139:table/FIN-TRANSACTIONS*"
+			]
+		}
+	]
+}
