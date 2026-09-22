@@ -1,0 +1,101 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "BuildMumbaiNetwork",
+			"Effect": "Allow",
+			"Action": [
+				"ec2:CreateVpc",
+				"ec2:ModifyVpcAttribute",
+				"ec2:CreateInternetGateway",
+				"ec2:AttachInternetGateway",
+				"ec2:CreateSubnet",
+				"ec2:ModifySubnetAttribute",
+				"ec2:CreateRouteTable",
+				"ec2:CreateRoute",
+				"ec2:AssociateRouteTable",
+				"ec2:CreateSecurityGroup",
+				"ec2:AuthorizeSecurityGroupIngress",
+				"ec2:AuthorizeSecurityGroupEgress",
+				"ec2:RevokeSecurityGroupEgress",
+				"ec2:CreateVpcEndpoint",
+				"ec2:ModifyVpcEndpoint",
+				"ec2:CreateLaunchTemplate",
+				"ec2:CreateLaunchTemplateVersion",
+				"ec2:ModifyLaunchTemplate"
+			],
+			"Resource": "*",
+			"Condition": {
+				"StringEquals": {
+					"aws:RequestedRegion": "ap-south-1"
+				}
+			}
+		},
+		{
+			"Sid": "TagMumbaiEC2Resources",
+			"Effect": "Allow",
+			"Action": [
+				"ec2:CreateTags"
+			],
+			"Resource": "*",
+			"Condition": {
+				"StringEquals": {
+					"aws:RequestedRegion": "ap-south-1"
+				}
+			}
+		},
+		{
+			"Sid": "RunMumbaiInstancesForAutoScaling",
+			"Effect": "Allow",
+			"Action": [
+				"ec2:RunInstances"
+			],
+			"Resource": "*",
+			"Condition": {
+				"StringEquals": {
+					"aws:RequestedRegion": "ap-south-1"
+				}
+			}
+		},
+		{
+			"Sid": "BuildMumbaiLoadBalancing",
+			"Effect": "Allow",
+			"Action": [
+				"elasticloadbalancing:CreateLoadBalancer",
+				"elasticloadbalancing:CreateTargetGroup",
+				"elasticloadbalancing:ModifyLoadBalancerAttributes",
+				"elasticloadbalancing:ModifyTargetGroup",
+				"elasticloadbalancing:ModifyTargetGroupAttributes",
+				"elasticloadbalancing:DeleteTargetGroup",
+				"elasticloadbalancing:AddTags"
+			],
+			"Resource": [
+				"arn:aws:elasticloadbalancing:ap-south-1:257074875139:loadbalancer/app/MUM-ALB/*",
+				"arn:aws:elasticloadbalancing:ap-south-1:257074875139:targetgroup/MUM-APP-TG/*"
+			]
+		},
+		{
+			"Sid": "BuildMumbaiAutoScaling",
+			"Effect": "Allow",
+			"Action": [
+				"autoscaling:CreateAutoScalingGroup",
+				"autoscaling:UpdateAutoScalingGroup",
+				"autoscaling:CreateOrUpdateTags"
+			],
+			"Resource": "arn:aws:autoscaling:ap-south-1:257074875139:autoScalingGroup:*:autoScalingGroupName/MUM-APP-ASG"
+		},
+		{
+			"Sid": "PassApplicationRoleForMumbaiInstances",
+			"Effect": "Allow",
+			"Action": [
+				"iam:PassRole"
+			],
+			"Resource": "arn:aws:iam::257074875139:role/APP-EC2-ROLE",
+			"Condition": {
+				"StringEquals": {
+					"iam:PassedToService": "ec2.amazonaws.com"
+				}
+			}
+		}
+	]
+}
