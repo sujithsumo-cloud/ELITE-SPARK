@@ -8,6 +8,22 @@ The platform uses **Hyderabad (`ap-south-2`) as the primary region** and **Mumba
 
 ---
 
+## Project Status
+
+The implementation and controlled validation of ELITE SPARK have been completed.
+
+Project proof is retained in:
+
+```text
+Screenshot/
+Demo Video/
+Deliverables/
+```
+
+To control AWS cost after validation, cost-bearing runtime resources may be intentionally scaled down or deprovisioned when the project is not being demonstrated. The Terraform code, evidence, IAM references and runbook remain the project source of truth for rebuild and review.
+
+---
+
 ## Project Objectives
 
 The project was designed to demonstrate:
@@ -562,7 +578,7 @@ Security controls include:
 Private application EC2 instances
 ALB-only application access
 No public application port
-IAM least privilege
+IAM role separation and project-scoped permissions
 GitHub OIDC
 Regional KMS encryption
 S3 encryption
@@ -651,11 +667,14 @@ Lower cost normally increases RTO.
 
 # Repository Structure
 
+The current repository is organized as:
+
 ```text
 ELITE-SPARK/
 │
 ├── README.md
 ├── .gitignore
+├── MULTI AVAILABILITY ELITE PROJECT.png
 │
 ├── .github/
 │   └── workflows/
@@ -689,10 +708,32 @@ ELITE-SPARK/
 │   ├── Deliverable-14-Primary-Database-Failure.md
 │   └── Deliverable-15-Final-DR-Runbook.md
 │
-├── Screenshot/
-│   └── Project implementation and validation evidence
+├── Demo Video/
+│   └── README.MD
 │
-└── MULTI AVAILABILITY ELITE PROJECT.png
+├── IAM PERMISSIONS/
+│   ├── APP-EC2-ROLE/
+│   │   ├── APP-EC2-DYNAMODB.json
+│   │   ├── APP-EC2-ECR-PULL.json
+│   │   └── APP-EC2-TRUSTPOLICY.json
+│   │
+│   ├── CUSTOMER-MANAGED-POLICY/
+│   │   ├── ELITE-SPARK-DynamoDB-Terraform-Policy.json
+│   │   ├── ELITE-SPARK-HTTPS-Terraform-Policy.json
+│   │   ├── ELITE-SPARK-Mumbai-Build-Policy.json
+│   │   ├── ELITE-SPARK-Mumbai-DR-Policy.json
+│   │   └── ELITE-SPARK-Terraform-Policy.json
+│   │
+│   ├── GITHUB-ACTIONS-ROLE/
+│   │   ├── ELITE-SPARK-GITHUB-ACTIONS-ROL.json
+│   │   └── GITHUB-ACTION-TRUSTPOLICY.json
+│   │
+│   └── INLINE-USER-POLICY/
+│       ├── Terraform-ECR-Project-policy.json
+│       └── Terraform-Network-Read.json
+│
+└── Screenshot/
+    └── Project implementation and validation evidence
 ```
 
 ---
@@ -730,7 +771,25 @@ Operational deployment and recovery guidance is documented in:
 Deliverables/Deliverable-15-Final-DR-Runbook.md
 ```
 
+## Rebuild / Reuse Note
+
+The repository is reusable, but the current Terraform configuration is tailored to the original AWS account and implementation.
+
+A fresh deployment should review or parameterize:
+
+```text
+AWS account-specific ARNs
+Regional AMI IDs
+Route 53 hosted zone / domain
+ACM certificate references
+ECR registry values
+Existing IAM / OIDC prerequisites
+```
+
+The two Terraform states also contain cross-region dependencies. In particular, the Mumbai DynamoDB replica depends on the Hyderabad table, while the primary Route 53 configuration expects the Mumbai ALB to exist. Therefore, a completely fresh rebuild should be treated as a **staged deployment**, not assumed to be a single one-command apply.
+
 ---
+
 
 # Disaster Recovery Runbook
 
@@ -816,6 +875,30 @@ Example:
 
 ---
 
+# Project Demo Videos
+
+The complete project demonstration is split into focused validation videos hosted on **Google Drive**.
+
+A dedicated video index is also available at:
+
+[`Demo Video/README.MD`](Demo%20Video/README.MD)
+
+| No. | Demo | Video |
+|---:|---|---|
+| 01 | Availability Zone Failure and Auto Scaling | [▶ Watch](https://drive.google.com/file/d/1ClLwATjsXi_y_BDgHpp3AgO3NqTCRBP8/view?usp=drive_link) |
+| 02 | Active Region Check | [▶ Watch](https://drive.google.com/file/d/1-OfyEreYlinqHEO5MifkdF4nAKzXDE95/view?usp=drive_link) |
+| 03 | Complete Transaction Recovery | [▶ Watch](https://drive.google.com/file/d/1bjIPfEAOFo1m3PxTvULeJ8v_nHvXCLUk/view?usp=drive_link) |
+| 04 | CI/CD Test | [▶ Watch](https://drive.google.com/file/d/18tbpd5lxeT-WMkI7tstESVbmHuY1oI-E/view?usp=drive_link) |
+| 05 | Monitoring Test | [▶ Watch](https://drive.google.com/file/d/1THwAnX4JPX8k0YI-qGbaSI014VwJDE71/view?usp=drive_link) |
+| 06 | Network and Security Check | [▶ Watch](https://drive.google.com/file/d/1vYNH7PrsL4191c9poBR6Bjq29WBdLWz6/view?usp=drive_link) |
+| 07 | IAM, Encryption and KMS Keys Verification | [▶ Watch](https://drive.google.com/file/d/1-CJulPL5Jt2RiaX0K0fSPe7xu2CfKrlL/view?usp=drive_link) |
+| 08 | HTTP and HTTPS Verification | [▶ Watch](https://drive.google.com/file/d/1Me74nMLWYZUi1E5f5L8MoSZrmPMZMzly/view?usp=drive_link) |
+| 09 | Complete Region Availability Check | [▶ Watch](https://drive.google.com/file/d/1dM2O1UBoqMKZbrZ4Eu6f62YZTbDIXXfR/view?usp=drive_link) |
+
+The videos provide reviewable evidence for availability, recovery, CI/CD, monitoring, security, HTTPS and multi-region validation without storing large `.mp4` files directly in Git.
+
+---
+
 # Security Before GitHub Push
 
 Do not commit:
@@ -870,13 +953,17 @@ This internship implementation currently has:
 - Smaller Mumbai compute capacity than Hyderabad
 - Asynchronous DynamoDB regional replication
 - DNS failover timing that can be influenced by caching
+- GitHub Actions builds and pushes commit-SHA-tagged images, while the current EC2 launch templates pull `finance-app:v2`; runtime rollout is therefore not fully automated from the CI/CD workflow
+- The GitHub Actions role and trust policy are documented in `IAM PERMISSIONS/`, but the role is not currently defined as a Terraform resource in the repository
+- Some Terraform values are account/environment specific, so another AWS account must parameterize them before deployment
+- A clean rebuild requires staged handling of cross-region dependencies rather than assuming a single one-pass Terraform apply
 - No Kubernetes
 - No Ansible
 - No Prometheus or Grafana
 - No NAT Gateway
 - No AWS Backup service as the primary database-backup mechanism
 
-These are documented limitations, not hidden implementation gaps.
+These are documented limitations and implementation boundaries, not hidden gaps.
 
 ---
 
@@ -917,7 +1004,7 @@ Centralized security logging
 
 # Documentation
 
-The repository includes separate documentation for:
+The repository includes separate documentation and evidence for:
 
 1. Architecture
 2. SPOF analysis
@@ -930,11 +1017,31 @@ The repository includes separate documentation for:
 9. Controlled failure testing
 10. Data consistency
 11. IAM, encryption and secrets
-12. CI/CD
+12. CI/CD multi-region image publishing
 13. Cost estimation
-14. Database failure under high traffic
+14. Primary database failure
 15. Final DR runbook
-16. Deployment guide
+16. Demo video index
+17. IAM role, trust-policy, customer-managed-policy and inline-policy JSON references
+18. Implementation screenshots and validation evidence
+
+Primary operational guidance:
+
+```text
+Deliverables/Deliverable-15-Final-DR-Runbook.md
+```
+
+Demo index:
+
+```text
+Demo Video/README.MD
+```
+
+IAM reference material:
+
+```text
+IAM PERMISSIONS/
+```
 
 ---
 
